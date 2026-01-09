@@ -34,11 +34,15 @@ class LicenseViewModel: ObservableObject {
     @Published var maxDevices: Int = 0
     
     private let trialPeriodDays = 7
-    private let polarService = PolarService()
     private let userDefaults = UserDefaults.standard
-    // DISABLED: License server not yet deployed in production
-    // private let licenseServerURL = "http://localhost:3000/license/activate"
-    private let licenseServerURL = "" // Disabled until production server is ready
+    
+    // 자체 라이선스 서버 URL
+    // ⚠️ 배포 시 실제 서버 URL로 자동 전환됩니다
+    #if DEBUG
+    private let licenseServerURL = "http://localhost:3001/api/license"
+    #else
+    private let licenseServerURL = "https://api.badasugi.com/api/license"
+    #endif
     
     init() {
         loadLicenseState()
@@ -146,11 +150,6 @@ class LicenseViewModel: ObservableObject {
     
     // MARK: - License Activation
     func validateLicense() async {
-        // DISABLED: License server not yet deployed
-        validationMessage = "라이선스 활성화 기능은 아직 사용할 수 없습니다. 업데이트를 기다려주세요."
-        return
-        
-        /* Disabled until license server is deployed
         guard !licenseKey.isEmpty else {
             validationMessage = "라이선스 키를 입력해주세요"
             return
@@ -159,15 +158,39 @@ class LicenseViewModel: ObservableObject {
         isValidating = true
         validationMessage = nil
         
-        // 디버깅용: rawBody를 함수 스코프에서 접근 가능하도록 선언
-        var rawBody: String = ""
-        
         do {
             let deviceId = getDeviceId()
             let deviceName = getDeviceName()
             
-            // Prepare request
-            guard let url = URL(string: licenseServerURL) else {
+            // 1단계: 라이선스 키 검증
+            guard let validateUrl = URL(string: "\(licenseServerURL)/validate") else {
+                validationMessage = "잘못된 서버 URL입니다"
+                isValidating = false
+                return
+            }
+            
+            var validateRequest = URLRequest(url: validateUrl)
+            validateRequest.httpMethod = "POST"
+            validateRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            validateRequest.httpBody = try JSONEncoder().encode(["licenseKey": licenseKey])
+            
+            let (validateData, validateResponse) = try await URLSession.shared.data(for: validateRequest)
+            
+            guard let httpResponse = validateResponse as? HTTPURLResponse else {
+                validationMessage = "서버 응답을 받을 수 없습니다"
+                isValidating = false
+                return
+            }
+            
+            if !(200...299).contains(httpResponse.statusCode) {
+                let errorResponse = try? JSONDecoder().decode(ActivationResponse.self, from: validateData)
+                validationMessage = errorResponse?.message ?? "유효하지 않은 라이선스 키입니다"
+                isValidating = false
+                return
+            }
+            
+            // 2단계: 디바이스 활성화
+            guard let activateUrl = URL(string: "\(licenseServerURL)/activate") else {
                 validationMessage = "잘못된 서버 URL입니다"
                 isValidating = false
                 return
@@ -179,7 +202,7 @@ class LicenseViewModel: ObservableObject {
                 deviceName: deviceName
             )
             
-            var request = URLRequest(url: url)
+            var request = URLRequest(url: activateUrl)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONEncoder().encode(requestBody)
@@ -187,30 +210,15 @@ class LicenseViewModel: ObservableObject {
             // Make API call
             let (data, response) = try await URLSession.shared.data(for: request)
             
-            guard let httpResponse = response as? HTTPURLResponse else {
+            guard let activateHttpResponse = response as? HTTPURLResponse else {
                 validationMessage = "서버 응답을 받을 수 없습니다"
                 isValidating = false
                 return
             }
             
-            // 디버깅: raw response body 변환
-            rawBody = String(data: data, encoding: .utf8) ?? "Unable to decode response body"
-            let statusCode = httpResponse.statusCode
-            let dataCount = data.count
-            
-            // 디버깅 정보를 validationMessage에 추가
-            var debugInfo = "HTTP Status: \(statusCode), Data Count: \(dataCount), Raw Body: \(rawBody)"
-            
-            // data.count == 0이면 디코딩 시도하지 말고 return
-            if dataCount == 0 {
-                validationMessage = debugInfo
-                isValidating = false
-                return
-            }
-            
-            // status code가 200..299가 아니면 디코딩 시도하지 말고 rawBody를 그대로 보여주고 return
-            if !(200...299).contains(statusCode) {
-                validationMessage = debugInfo
+            if !(200...299).contains(activateHttpResponse.statusCode) {
+                let errorResponse = try? JSONDecoder().decode(ActivationResponse.self, from: data)
+                validationMessage = errorResponse?.message ?? "라이선스 활성화에 실패했습니다"
                 isValidating = false
                 return
             }
@@ -250,23 +258,17 @@ class LicenseViewModel: ObservableObject {
                 validationMessage = activationResponse.message ?? "라이선스 활성화에 실패했습니다"
             }
             
-        } catch let decodingError as DecodingError {
-            let rawBodyInfo = rawBody.isEmpty ? "" : ", Raw Body: \(rawBody)"
-            validationMessage = "응답 파싱 오류: \(decodingError.localizedDescription)\(rawBodyInfo)"
         } catch let urlError as URLError {
-            let rawBodyInfo = rawBody.isEmpty ? "" : ", Raw Body: \(rawBody)"
             if urlError.code == .cannotConnectToHost || urlError.code == .networkConnectionLost {
-                validationMessage = "서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.\(rawBodyInfo)"
+                validationMessage = "서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요."
             } else {
-                validationMessage = "네트워크 오류: \(urlError.localizedDescription)\(rawBodyInfo)"
+                validationMessage = "네트워크 오류: \(urlError.localizedDescription)"
             }
         } catch {
-            let rawBodyInfo = rawBody.isEmpty ? "" : ", Raw Body: \(rawBody)"
-            validationMessage = "오류 발생: \(error.localizedDescription)\(rawBodyInfo)"
+            validationMessage = "오류 발생: \(error.localizedDescription)"
         }
         
         isValidating = false
-        */
     }
     
     func removeLicense() {

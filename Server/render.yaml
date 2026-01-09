@@ -1,0 +1,21 @@
+# Render.com 배포 설정
+services:
+  - type: web
+    name: badasugi-license-server
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: badasugi.app@gmail.com
+      - key: TOSS_SECRET_KEY
+        sync: false
+    healthCheckPath: /api/health
+    autoDeploy: true
+

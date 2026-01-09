@@ -40,6 +40,8 @@ These commercial services are separate from the GPL-licensed source code. Users 
 
 Visit [https://www.badasugi.com](https://www.badasugi.com) to download the latest release.
 
+**⚠️ Important**: After downloading, you may see a macOS security warning. See [INSTALLATION.md](../INSTALLATION.md) for detailed installation instructions.
+
 ### Install via Homebrew
 
 ```bash
