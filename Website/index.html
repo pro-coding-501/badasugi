@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>받아쓰기 - 가장 완벽한 로컬 AI 음성 기록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kalam:wght@400;700&family=Caveat:wght@400;600;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        * {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            letter-spacing: -0.02em;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background: radial-gradient(ellipse 120% 100% at 50% 0%, #1a1a1c 0%, #0d0d0e 50%, #000000 100%);
+            color: #f5f5f7;
+            position: relative;
+            min-height: 100vh;
+        }
+        /* 짧은 노란 연필 스타일 */
+        .short-yellow-pencil {
+            width: 40px;
+            height: auto;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        /* 연필이 게이지와 함께 움직이는 애니메이션 */
+        @keyframes pencilMoveWithGauge {
+            0% {
+                transform: translateX(0) rotate(-8deg);
+            }
+            100% {
+                transform: translateX(calc(100% - 40px)) rotate(-8deg);
+            }
+        }
+        .pencil-on-gauge {
+            position: absolute;
+            top: -6px;
+            left: 0;
+            animation: pencilMoveWithGauge 2s ease-out infinite;
+            z-index: 10;
+        }
+        .handwriting {
+            font-family: "Kalam", "Caveat", "Nanum Pen Script", cursive;
+        }
+        .handwriting-bold {
+            font-family: "Kalam", "Caveat", cursive;
+            font-weight: 700;
+        }
+        .glass {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            position: relative;
+        }
+        .glass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: 
+                radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .glass-strong {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 8px 40px rgba(0, 0, 0, 0.5),
+                0 0 0 0.5px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+        /* 카드에도 구겨진 효과 추가 */
+        .glass-strong::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: 
+                radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 45%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .gradient-text {
+            background: linear-gradient(180deg, #ffffff 0%, #a1a1a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            display: inline-block;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+        }
+        /* 영롱한 불빛 효과 */
+        @keyframes gentleGlow {
+            0%, 100% {
+                filter: 
+                    drop-shadow(0 0 20px rgba(255, 255, 255, 0.15))
+                    drop-shadow(0 0 40px rgba(255, 255, 255, 0.1))
+                    drop-shadow(0 0 60px rgba(0, 217, 165, 0.08))
+                    drop-shadow(0 0 80px rgba(0, 217, 165, 0.05));
+            }
+            50% {
+                filter: 
+                    drop-shadow(0 0 25px rgba(255, 255, 255, 0.2))
+                    drop-shadow(0 0 50px rgba(255, 255, 255, 0.15))
+                    drop-shadow(0 0 75px rgba(0, 217, 165, 0.12))
+                    drop-shadow(0 0 100px rgba(0, 217, 165, 0.08));
+            }
+        }
+        .hero-glow {
+            animation: gentleGlow 4s ease-in-out infinite;
+        }
+        .gradient-blue {
+            background: linear-gradient(180deg, #2DD4BF 0%, #00D9A5 50%, #00B8A3 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 
+                0 4px 20px rgba(0, 217, 165, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-radius: 14px;
+        }
+        .gradient-blue:hover {
+            background: linear-gradient(180deg, #5EEAD4 0%, #00D9A5 50%, #00C9A7 100%);
+            box-shadow: 
+                0 8px 32px rgba(0, 217, 165, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .gradient-blue:active {
+            transform: translateY(0) scale(0.98);
+        }
+        /* Ghost Button Style */
+        .ghost-button {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-radius: 14px;
+        }
+        .ghost-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+        .ghost-button:active {
+            transform: translateY(0) scale(0.98);
+        }
+        /* Doodle 효과 */
+        .doodle-circle {
+            position: absolute;
+            border: 2.5px solid #00D9A5;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: doodlePulse 3s ease-out infinite;
+        }
+        @keyframes doodlePulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+            50% { transform: scale(1.1) rotate(5deg); opacity: 0.7; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes soundWave {
+            0%, 100% { height: 8px; opacity: 0.4; }
+            50% { height: 24px; opacity: 1; }
+        }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+        .doodle-underline {
+            position: relative;
+            display: inline-block;
+        }
+        .doodle-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00D9A5 0%, #00D9A5 100%);
+            border-radius: 1px;
+            opacity: 0.8;
+            z-index: -1;
+        }
+        .doodle-arrow {
+            position: relative;
+            display: inline-block;
+        }
+        .doodle-arrow::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%) rotate(15deg);
+            color: #00D9A5;
+            font-size: 1.2em;
+            font-family: "Kalam", cursive;
+        }
+        /* 손으로 그린 듯한 박스 */
+        .sketch-box {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            position: relative;
+            background: rgba(0, 217, 165, 0.1);
+        }
+        /* 포스트잇 효과 - 클린 버전 */
+        .postit {
+            background: rgba(28, 28, 30, 0.7);
+            box-shadow: 
+                0 4px 24px rgba(0, 0, 0, 0.4),
+                0 0 0 0.5px rgba(255, 255, 255, 0.06);
+            transform: none;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .postit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+        }
+        .postit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: 
+                radial-gradient(ellipse at 30% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 40%);
+            pointer-events: none;
+        }
+        .postit:nth-child(even) {
+            transform: none;
+        }
+        .postit-card {
+            background: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            box-shadow: 
+                0 16px 64px rgba(0, 0, 0, 0.5),
+                0 0 0 0.5px rgba(255, 255, 255, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transform: none;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .postit-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: 
+                radial-gradient(ellipse at 30% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 100%, rgba(0, 217, 165, 0.03) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .postit-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+            opacity: 0.8;
+        }
+        /* 구름 모양 배경 */
+        .cloud-bg {
+            background: rgba(45, 45, 47, 0.5);
+            border-radius: 50px;
+            position: relative;
+        }
+        .cloud-bg::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(45, 45, 47, 0.5);
+            border-radius: 50%;
+        }
+        .cloud-bg::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: rgba(45, 45, 47, 0.5);
+            border-radius: 50%;
+        }
+        /* 클린 버튼 */
+        .sketch-button {
+            position: relative;
+        }
+        .aurora-effect {
+            display: none;
+        }
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        .marquee-container {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+        .marquee {
+            display: flex;
+            animation: marquee 40s linear infinite;
+            width: max-content;
+        }
+        .marquee:hover {
+            animation-play-state: paused;
+        }
+        .marquee-item {
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            position: relative;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            margin: 0 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .marquee-item img {
+            transition: all 0.3s ease-out;
+            height: 56px;
+            width: auto;
+            min-width: 56px;
+            opacity: 0.6;
+            object-fit: contain;
+            display: block;
+        }
+        .marquee-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+        }
+        .marquee-item:hover img {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .marquee-item-name {
+            margin-top: 10px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+            text-align: center;
+            white-space: nowrap;
+            letter-spacing: 0;
+        }
+        .bento-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            background: rgba(28, 28, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .bento-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            opacity: 0.6;
+        }
+        .bento-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                0 0 0 0.5px rgba(255, 255, 255, 0.1);
+        }
+        .graph-bar {
+            transition: all 0.5s ease-out;
+        }
+        .graph-bar.active {
+            background: linear-gradient(180deg, #00D9A5 0%, #00D9A5 100%);
+            box-shadow: 0 4px 16px rgba(0, 217, 165, 0.3);
+        }
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .count-animate {
+            animation: countUp 0.4s ease-out;
+        }
+        .button-glow {
+            /* Handled by gradient-blue class */
+        }
+        .button-glow:hover {
+            /* Handled by gradient-blue class */
+        }
+        /* 섹션별 배경 */
+        section {
+            position: relative;
+            z-index: 1;
+        }
+        /* 추임새 텍스트 */
+        .aside-text {
+            font-family: "Kalam", "Caveat", cursive;
+            color: #86868b;
+            font-size: 0.9em;
+            transform: rotate(-5deg);
+            display: inline-block;
+            margin-left: 8px;
+            opacity: 0.7;
+        }
+        /* 점선 화살표 */
+        .dotted-arrow {
+            position: relative;
+            display: inline-block;
+            padding: 0 30px;
+        }
+        .dotted-arrow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-top: 2px dashed rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%);
+        }
+        .dotted-arrow::after {
+            content: '→';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #86868b;
+            font-size: 1.2em;
+        }
+        
+        /* Hero 장식 애니메이션 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes floatRotate {
+            0%, 100% { transform: translateY(0px) rotate(-3deg); }
+            50% { transform: translateY(-12px) rotate(3deg); }
+        }
+        @keyframes soundWave {
+            0%, 100% { height: 8px; opacity: 0.4; }
+            50% { height: 24px; opacity: 1; }
+        }
+        @keyframes typing {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        @keyframes pencilWrite {
+            0% { transform: translateX(0) rotate(-45deg); }
+            25% { transform: translateX(8px) rotate(-42deg); }
+            50% { transform: translateX(4px) rotate(-48deg); }
+            75% { transform: translateX(12px) rotate(-44deg); }
+            100% { transform: translateX(0) rotate(-45deg); }
+        }
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        @keyframes textReveal {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+        @keyframes drawLine {
+            0% { stroke-dashoffset: 100; }
+            100% { stroke-dashoffset: 0; }
+        }
+        
+        /* 장식 요소 스타일 */
+        .deco-float { animation: float 4s ease-in-out infinite; }
+        .deco-float-slow { animation: float 6s ease-in-out infinite; }
+        .deco-wiggle { animation: wiggle 3s ease-in-out infinite; }
+        .deco-pulse { animation: pulse 2s ease-in-out infinite; }
+        
+        .postit-deco {
+            background: rgba(45, 45, 47, 0.85);
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .speech-bubble {
+            position: relative;
+            background: rgba(45, 45, 47, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid rgba(45, 45, 47, 0.9);
+        }
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 19px;
+            width: 0;
+            height: 0;
+            border-left: 11px solid transparent;
+            border-right: 11px solid transparent;
+            border-top: 11px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Navigation and Link Hovers */
+        .nav-link:hover {
+            color: #ffffff !important;
+        }
+        
+        footer a:hover {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        /* Button Hover Effects */
+        #decreaseBtn:hover, #increaseBtn:hover {
+            background: rgba(0, 217, 165, 0.15) !important;
+            border-color: rgba(0, 217, 165, 0.3) !important;
+            transform: scale(1.08);
+        }
+        
+        #decreaseBtn:active, #increaseBtn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 h-16" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+        <nav class="container mx-auto px-6 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="assets/badasugi_Logo.jpg" alt="Badasugi Logo" class="h-10 w-auto" style="object-fit: contain; border-radius: 8px;" />
+                <div class="text-xl font-semibold" style="color: #f5f5f7; letter-spacing: -0.02em;">받아쓰기</div>
+            </div>
+            <div class="flex items-center space-x-10">
+                <a href="#features" class="font-normal text-sm nav-link" style="color: rgba(245, 245, 247, 0.7); transition: color 0.3s ease-out;">기능</a>
+                <a href="#pricing" class="font-normal text-sm nav-link" style="color: rgba(245, 245, 247, 0.7); transition: color 0.3s ease-out;">가격</a>
+                <a href="#pricing" class="gradient-blue px-5 py-2 font-medium text-sm inline-flex items-center gap-2" style="transition: all 0.3s ease-out;">
+                    <img src="https://cdn.simpleicons.org/apple/ffffff" alt="Apple" class="w-4 h-4 shrink-0" />
+                    다운로드
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative pt-40 pb-40 px-6 min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background gradient overlay -->
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0, 217, 165, 0.08) 0%, transparent 60%);"></div>
+        
+        <div class="container mx-auto max-w-5xl text-center relative z-10">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-10 leading-[0.95] hero-glow" style="letter-spacing: -0.05em; font-weight: 800;" data-aos="fade-up" data-aos-duration="1000">
+                <span class="gradient-text">말하는 대로,</span><br>
+                <span class="gradient-text">받아쓰기</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-14 leading-[1.7] max-w-3xl mx-auto" style="color: rgba(255, 255, 255, 0.75); font-weight: 400; letter-spacing: -0.01em;" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+                인터넷 없이 안전하게, 클라우드로 빠르게.<br>
+                보안과 속도, 당신이 원하는 방식으로 선택하세요.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-5 justify-center items-center mt-14" data-aos="fade-up" data-aos-delay="400" data-aos-duration="1000">
+                <a href="#pricing" class="gradient-blue px-10 py-4 font-semibold text-lg inline-flex items-center gap-3" style="transition: all 0.3s ease-out;">
+                    <img src="https://cdn.simpleicons.org/apple/ffffff" alt="Apple" class="w-5 h-5 shrink-0" style="width: 20px; height: 20px; object-fit: contain;" />
+                    Mac 버전 다운로드
+                </a>
+                <button class="ghost-button px-10 py-4 font-medium text-lg inline-flex items-center gap-3">
+                    <img src="assets/windowlogo.svg" alt="Windows" class="w-5 h-5 shrink-0" style="width: 20px; height: 20px; object-fit: contain; filter: brightness(0) invert(1);" />
+                    Windows 버전 출시 예정
+                </button>
+            </div>
+            <p class="text-base mt-6 text-center" style="color: rgba(255, 255, 255, 0.6); font-weight: 400;" data-aos="fade-up" data-aos-delay="500" data-aos-duration="1000">
+                <span style="color: #00D9A5; font-weight: 600;">7일 무료체험</span>으로 모든 기능을 경험해보세요
+            </p>
+        </div>
+    </section>
+
+    <!-- App Integration Ticker -->
+    <section class="py-20 relative" style="background: rgba(0, 0, 0, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse 100% 100% at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 70%);"></div>
+        <div class="marquee-container w-full">
+                <div class="marquee flex items-center">
+                    <!-- First set -->
+                    <!-- 한국 필수 앱 -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/kakaotalk/FFCD00" alt="KakaoTalk" class="h-16 mx-8" />
+                        <div class="marquee-item-name">KakaoTalk</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/line.svg" alt="Line" class="mx-8" style="height: 64px; width: auto; max-width: 80px; object-fit: contain;" />
+                        <div class="marquee-item-name">Line</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/telegram/26A5E4" alt="Telegram" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Telegram</div>
+                    </div>
+                    <!-- 최신 AI -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/chatgpt logo.svg" alt="ChatGPT" class="h-16 mx-8" style="filter: brightness(0) invert(1);" />
+                        <div class="marquee-item-name">ChatGPT</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/claude-logo.svg" alt="Claude" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Claude</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/perplexity/22BFAA" alt="Perplexity" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Perplexity</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/googlegemini/8E75B2" alt="Gemini" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Gemini</div>
+                    </div>
+                    <!-- 생산성 & 개발 -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/notion/ffffff" alt="Notion" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Notion</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/obsidian/7C3AED" alt="Obsidian" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Obsidian</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/cursor/ffffff" alt="Cursor" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Cursor</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/visual-studio-code-1.svg" alt="VS Code" class="h-16 mx-8" />
+                        <div class="marquee-item-name">VS Code</div>
+                    </div>
+                    <!-- 소통 & 오피스 -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/discord/5865F2" alt="Discord" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Discord</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/gmail/EA4335" alt="Gmail" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Gmail</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/excel-4.svg" alt="Excel" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Excel</div>
+                    </div>
+                    
+                    <!-- Duplicate set for seamless loop -->
+                    <!-- 한국 필수 앱 -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/kakaotalk/FFCD00" alt="KakaoTalk" class="h-16 mx-8" />
+                        <div class="marquee-item-name">KakaoTalk</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/line.svg" alt="Line" class="mx-8" style="height: 64px; width: auto; max-width: 80px; object-fit: contain;" />
+                        <div class="marquee-item-name">Line</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/telegram/26A5E4" alt="Telegram" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Telegram</div>
+                    </div>
+                    <!-- 최신 AI -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/chatgpt logo.svg" alt="ChatGPT" class="h-16 mx-8" style="filter: brightness(0) invert(1);" />
+                        <div class="marquee-item-name">ChatGPT</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/claude-logo.svg" alt="Claude" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Claude</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/perplexity/22BFAA" alt="Perplexity" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Perplexity</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/googlegemini/8E75B2" alt="Gemini" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Gemini</div>
+                    </div>
+                    <!-- 생산성 & 개발 -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/notion/ffffff" alt="Notion" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Notion</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/obsidian/7C3AED" alt="Obsidian" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Obsidian</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/cursor/ffffff" alt="Cursor" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Cursor</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/visual-studio-code-1.svg" alt="VS Code" class="h-16 mx-8" />
+                        <div class="marquee-item-name">VS Code</div>
+                    </div>
+                    <!-- 소통 & 오피스 -->
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/discord/5865F2" alt="Discord" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Discord</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="https://cdn.simpleicons.org/gmail/EA4335" alt="Gmail" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Gmail</div>
+                    </div>
+                    <div class="marquee-item cursor-pointer">
+                        <img src="assets/excel-4.svg" alt="Excel" class="h-16 mx-8" />
+                        <div class="marquee-item-name">Excel</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Values - Bento Grid -->
+    <section id="features" class="py-32 px-6 relative">
+        <div class="container mx-auto max-w-7xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Box 1: Privacy First -->
+                <div class="glass-strong p-10 bento-card" style="border-radius: 24px;" data-aos="fade-up" data-aos-duration="1000">
+                    <div class="flex flex-col md:flex-row items-center gap-8 h-full relative z-10">
+                        <div class="flex-shrink-0">
+                            <div class="w-28 h-28 flex items-center justify-center rounded-2xl" style="background: rgba(0, 217, 165, 0.12); border: 1px solid rgba(0, 217, 165, 0.2);">
+                                <i class="fas fa-shield-alt text-5xl" style="color: #00D9A5;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-3xl font-bold mb-4" style="color: #f5f5f7; letter-spacing: -0.03em; font-weight: 600;">
+                                100% Privacy First
+                            </h3>
+                            <p class="text-lg leading-relaxed" style="color: rgba(255, 255, 255, 0.6); font-weight: 400;">
+                                로컬 모드는 오직 당신의 컴퓨터에만 머뭅니다. 터보 모드를 써도 걱정 마세요. 당신의 API 키로 암호화되어 전송됩니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 2: Zero Latency -->
+                <div class="glass-strong p-10 bento-card" style="border-radius: 24px;" data-aos="fade-up" data-aos-delay="100" data-aos-duration="1000">
+                    <div class="flex flex-col items-center text-center h-full relative z-10">
+                        <div class="w-24 h-24 flex items-center justify-center mb-6 rounded-2xl" style="background: rgba(0, 217, 165, 0.12); border: 1px solid rgba(0, 217, 165, 0.2);">
+                            <i class="fas fa-bolt text-4xl" style="color: #00D9A5;"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4" style="color: #f5f5f7; letter-spacing: -0.03em; font-weight: 600;">
+                            Zero Latency
+                        </h3>
+                        <p class="text-lg leading-relaxed" style="color: rgba(255, 255, 255, 0.6); font-weight: 400;">
+                            말하는 순간 글자가 됩니다. 딜레이 없는 실시간 입력.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Box 3: Offline Ready -->
+                <div class="glass-strong p-10 bento-card" style="border-radius: 24px;" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+                    <div class="flex flex-col items-center text-center h-full relative z-10">
+                        <div class="w-24 h-24 flex items-center justify-center mb-6 rounded-2xl" style="background: rgba(0, 217, 165, 0.12); border: 1px solid rgba(0, 217, 165, 0.2);">
+                            <i class="fas fa-plane text-4xl" style="color: #00D9A5;"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4" style="color: #f5f5f7; letter-spacing: -0.03em; font-weight: 600;">
+                            Offline Ready
+                        </h3>
+                        <p class="text-lg leading-relaxed" style="color: rgba(255, 255, 255, 0.6); font-weight: 400;">
+                            비행기 안에서도, 와이파이가 없어도 완벽하게 작동합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Box 4: Optimized for Korean -->
+                <div class="glass-strong p-10 bento-card" style="border-radius: 24px;" data-aos="fade-up" data-aos-delay="300" data-aos-duration="1000">
+                    <div class="flex flex-col md:flex-row items-center gap-8 h-full relative z-10">
+                        <div class="flex-shrink-0">
+                            <div class="w-28 h-28 flex items-center justify-center rounded-2xl" style="background: rgba(0, 217, 165, 0.12); border: 1px solid rgba(0, 217, 165, 0.2);">
+                                <div class="text-5xl font-bold handwriting" style="color: #00D9A5;">가</div>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-3xl font-bold mb-4" style="color: #f5f5f7; letter-spacing: -0.03em; font-weight: 600;">
+                                Optimized for Korean
+                            </h3>
+                            <p class="text-lg leading-relaxed" style="color: rgba(255, 255, 255, 0.6); font-weight: 400;">
+                                복잡한 띄어쓰기부터 사투리 억양까지. 한국어 데이터로 정교하게 튜닝된 모델이 문맥을 완벽히 이해합니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-32 px-6 relative overflow-hidden">
+        <div class="container mx-auto max-w-7xl relative z-10">
+            <div class="text-center mb-20" data-aos="fade-up" data-aos-duration="1000">
+                <div class="inline-block mb-6 px-6 py-3 rounded-full" style="background: rgba(0, 217, 165, 0.1); border: 1px solid rgba(0, 217, 165, 0.2);">
+                    <p class="text-base font-semibold" style="color: #00D9A5; font-weight: 600;">
+                        <span style="color: #ffffff;">7일 무료체험</span> · 신용카드 불필요
+                    </p>
+                </div>
+                <h2 class="text-5xl md:text-6xl font-bold mb-6" style="letter-spacing: -0.04em; font-weight: 700;">
+                    <span class="gradient-text">평생 소장 라이선스</span>
+                </h2>
+                <p class="text-xl md:text-2xl mb-2" style="color: rgba(255, 255, 255, 0.7); font-weight: 400;">많이 구매할수록 더 저렴해집니다</p>
+                <p class="text-lg" style="color: rgba(255, 255, 255, 0.5); font-weight: 400;">평생 소장, 평생 업데이트 무료</p>
+            </div>
+            
+            <div class="max-w-2xl mx-auto">
+                <!-- 가격 계산기 카드 -->
+                <div class="glass-strong p-8 postit-card" style="border-radius: 28px;" data-aos="fade-up" data-aos-duration="1000">
+                    <!-- 상단: 수량 조절기 -->
+                    <div class="mb-8 relative z-10">
+                        <label class="block text-sm font-normal mb-5 text-center" style="color: rgba(255, 255, 255, 0.5);">사용할 컴퓨터 대수</label>
+                        <div class="flex items-center justify-center">
+                            <button id="decreaseBtn" class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-medium" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #00D9A5; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);">
+                                <span class="flex items-center justify-center leading-none">−</span>
+                            </button>
+                            <div class="mx-10 text-center">
+                                <div id="computerCount" class="text-6xl md:text-7xl font-bold mb-2" style="color: #00D9A5; letter-spacing: -0.04em; transition: all 0.3s ease-out; font-weight: 700;">1</div>
+                            </div>
+                            <button id="increaseBtn" class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-medium" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #00D9A5; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);">
+                                <span class="flex items-center justify-center leading-none">+</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 중단: 혜택 알림 배지 (동적) -->
+                    <div id="discountBadge" class="mb-8 rounded-2xl p-4 text-center relative z-10" style="background: rgba(0, 217, 165, 0.08); border: 1px solid rgba(0, 217, 165, 0.15); min-height: 70px; transition: all 0.3s ease-out;">
+                        <div class="text-xl font-semibold" style="color: #00D9A5; font-weight: 600;">
+                            기기 수에 따라 단계별 할인이 적용됩니다
+                        </div>
+                        <div class="text-sm mt-1" style="color: rgba(255, 255, 255, 0.5); font-weight: 400;">
+                            <span id="discountDescription">단계별 할인 적용</span>
+                        </div>
+                    </div>
+
+                    <!-- 하단: 최종 가격 및 구매 버튼 -->
+                    <div class="pt-6 relative z-10" style="border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                        <div class="flex items-start justify-center gap-4 mb-6">
+                            <span id="finalPrice" class="text-5xl md:text-6xl font-bold count-animate" style="color: #f5f5f7; letter-spacing: -0.04em; font-weight: 700;">₩29,000</span>
+                            <div class="flex flex-col items-start pt-2">
+                                <span id="originalPrice" class="text-xl line-through" style="color: rgba(255, 255, 255, 0.35); font-weight: 400;">₩29,000</span>
+                                <span id="discountAmountDisplay" class="text-base font-medium" style="color: #00D9A5; display: none; font-weight: 500;">
+                                    <span id="discountAmount">₩0</span> 할인
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-center text-sm mb-6" style="color: rgba(255, 255, 255, 0.5); font-weight: 400;">(평생 소장)</p>
+                        
+                        <!-- 구매 버튼 -->
+                        <button id="purchaseBtn" class="w-full gradient-blue py-4 font-semibold text-base inline-flex items-center justify-center gap-3" style="transition: all 0.3s ease-out;">
+                            <span id="purchaseBtnText">구매하기</span>
+                        </button>
+                    </div>
+
+                    <!-- 추가 정보 -->
+                    <div class="mt-8 pt-6 relative z-10" style="border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                        <ul class="space-y-2 text-sm" style="color: rgba(255, 255, 255, 0.6); font-weight: 400;">
+                            <li class="flex items-center justify-center">
+                                <span class="mr-2 text-base" style="color: #00D9A5;">✓</span>
+                                <span>평생 업데이트 무료</span>
+                            </li>
+                            <li class="flex items-center justify-center">
+                                <span class="mr-2 text-base" style="color: #00D9A5;">✓</span>
+                                <span>14일 환불 보장</span>
+                            </li>
+                            <li class="flex items-center justify-center">
+                                <span class="mr-2 text-base" style="color: #00D9A5;">✓</span>
+                                <span>모든 기능 포함</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="py-32 px-6 relative">
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 217, 165, 0.06) 0%, transparent 60%);"></div>
+        <div class="container mx-auto max-w-4xl text-center relative z-10">
+            <h2 class="text-5xl md:text-6xl font-bold mb-8" style="letter-spacing: -0.04em; font-weight: 700;" data-aos="fade-up" data-aos-duration="1000">
+                <span class="gradient-text">지금 시작하세요</span>
+            </h2>
+            <p class="text-xl md:text-2xl mb-5" style="color: rgba(255, 255, 255, 0.7); font-weight: 400; line-height: 1.6;" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">Mac 버전을 다운로드하고 AI 받아쓰기의 힘을 경험해보세요.</p>
+            <p class="handwriting text-lg mb-12 opacity-70" style="color: rgba(255, 255, 255, 0.5); font-weight: 400;" data-aos="fade-up" data-aos-delay="250" data-aos-duration="1000">자, 시작해볼까요?</p>
+            <a href="#pricing" class="gradient-blue px-10 py-4 font-semibold text-lg inline-flex items-center gap-3" style="transition: all 0.3s ease-out;" data-aos="fade-up" data-aos-delay="400" data-aos-duration="1000">
+                <img src="https://cdn.simpleicons.org/apple/ffffff" alt="Apple" class="w-5 h-5 shrink-0" />
+                Mac 버전 다운로드
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-6 px-6" style="background: rgba(0, 0, 0, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.04);">
+        <div class="container mx-auto max-w-6xl">
+            <!-- 상단: 링크 -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 pb-4" style="border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+                <div class="mb-2 md:mb-0 flex items-center gap-3">
+                    <p class="text-base font-semibold" style="color: #f5f5f7; font-weight: 600;">받아쓰기 (badasugi)</p>
+                    <a href="https://github.com/Badasugi/badasugi" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300" style="background: #00D9A5; border: 1px solid rgba(0, 217, 165, 0.3); color: #000000;" onmouseover="this.style.background='#2DD4BF'; this.style.borderColor='rgba(0, 217, 165, 0.5)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#00D9A5'; this.style.borderColor='rgba(0, 217, 165, 0.3)'; this.style.transform='translateY(0)'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="terms.html" class="text-sm" style="color: #86868b; transition: color 0.3s ease-out; font-weight: 400;">이용약관</a>
+                    <a href="privacy.html" class="text-sm" style="color: #86868b; transition: color 0.3s ease-out; font-weight: 400;">개인정보처리방침</a>
+                </div>
+            </div>
+            
+            <!-- 하단: 사업자 정보 -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div class="flex-1">
+                    <div class="text-xs leading-tight" style="color: #86868b; font-weight: 400;">
+                        <span style="color: rgba(255, 255, 255, 0.5);">대표자:</span> 유중경 · 
+                        <span style="color: rgba(255, 255, 255, 0.5);">주소:</span> 인천 미추홀구 염전로 168번길 28, B동 2004호 · 
+                        <span style="color: rgba(255, 255, 255, 0.5);">전화번호:</span> <a href="tel:010-2560-9183" style="color: #86868b; transition: color 0.3s ease-out;">010-2560-9183</a> · 
+                        <span style="color: rgba(255, 255, 255, 0.5);">이메일:</span> <a href="mailto:badasugi.app@gmail.com" style="color: #86868b; transition: color 0.3s ease-out;">badasugi.app@gmail.com</a>
+                    </div>
+                </div>
+                <div class="text-xs mt-2 md:mt-0" style="color: #86868b; opacity: 0.7; font-weight: 400;">
+                    <p>Copyright © 2026 받아쓰기. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // AOS 초기화
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 평생 소장 라이선스 계산 로직
+        (function() {
+            const BASE_PRICE = 29000;
+            let computerCount = 1;
+            
+            const countElement = document.getElementById('computerCount');
+            const decreaseBtn = document.getElementById('decreaseBtn');
+            const increaseBtn = document.getElementById('increaseBtn');
+            const originalPriceElement = document.getElementById('originalPrice');
+            const discountBadge = document.getElementById('discountBadge');
+            const discountPercentElement = document.getElementById('discountPercent');
+            const discountAmountDisplay = document.getElementById('discountAmountDisplay');
+            const discountAmountElement = document.getElementById('discountAmount');
+            const finalPriceElement = document.getElementById('finalPrice');
+            const purchaseBtnText = document.getElementById('purchaseBtnText');
+            
+            // 티어 정의 배열
+            const PRICING_TIERS = [
+                { minQty: 1, maxQty: 1, discount: 0, unitPrice: 29000, label: "1대" },
+                { minQty: 2, maxQty: 3, discount: 5, unitPrice: 27550, label: "2–3대" },
+                { minQty: 4, maxQty: 5, discount: 8, unitPrice: 26680, label: "4–5대" },
+                { minQty: 6, maxQty: 10, discount: 12, unitPrice: 25520, label: "6–10대" },
+                { minQty: 11, maxQty: 20, discount: 15, unitPrice: 24650, label: "11–20대" },
+                { minQty: 21, maxQty: Infinity, discount: 18, unitPrice: 23780, label: "21대 이상" }
+            ];
+            
+            // 프로gressive tier 기반 가격 계산 함수
+            function calculateProgressivePricing(qty) {
+                const totalOriginalPrice = BASE_PRICE * qty;
+                let finalTotalPrice = 0;
+                const breakdown = [];
+                let processedQty = 0;
+                
+                // 각 티어를 순회하며 해당 티어 범위 내의 수량에 대해 가격 계산
+                for (let i = 0; i < PRICING_TIERS.length && processedQty < qty; i++) {
+                    const tier = PRICING_TIERS[i];
+                    
+                    // 아직 이 티어에 도달하지 않은 경우 스킵
+                    if (qty < tier.minQty) {
+                        continue;
+                    }
+                    
+                    // 이 티어 범위 내에 포함되는 수량 계산
+                    // processedQty + 1부터 시작하여 이 티어의 범위 내에서만 계산
+                    const tierStart = Math.max(tier.minQty, processedQty + 1);
+                    const tierEnd = Math.min(tier.maxQty, qty);
+                    
+                    if (tierStart <= tierEnd) {
+                        const unitsInTier = tierEnd - tierStart + 1;
+                        const subtotal = tier.unitPrice * unitsInTier;
+                        finalTotalPrice += subtotal;
+                        
+                        breakdown.push({
+                            tierLabel: tier.label,
+                            unitsInTier: unitsInTier,
+                            discountRate: tier.discount,
+                            unitPrice: tier.unitPrice,
+                            subtotal: subtotal
+                        });
+                        
+                        processedQty += unitsInTier;
+                    }
+                }
+                
+                const totalDiscountAmount = totalOriginalPrice - finalTotalPrice;
+                
+                return {
+                    totalOriginalPrice: totalOriginalPrice,
+                    totalDiscountAmount: totalDiscountAmount,
+                    finalTotalPrice: finalTotalPrice,
+                    breakdown: breakdown
+                };
+            }
+            
+            // 검증 함수
+            function validatePricing() {
+                const testCases = [1, 3, 5, 6, 10, 11, 20, 21];
+                const results = [];
+                
+                console.log('=== 가격 계산 검증 시작 ===');
+                
+                for (const qty of testCases) {
+                    const result = calculateProgressivePricing(qty);
+                    const expectedOriginal = BASE_PRICE * qty;
+                    const calculatedDiscount = expectedOriginal - result.finalTotalPrice;
+                    const avgDiscountRate = expectedOriginal > 0 
+                        ? Math.round((calculatedDiscount / expectedOriginal) * 100)
+                        : 0;
+                    
+                    const testResult = {
+                        qty: qty,
+                        totalOriginalPrice: result.totalOriginalPrice,
+                        finalTotalPrice: result.finalTotalPrice,
+                        totalDiscountAmount: result.totalDiscountAmount,
+                        avgDiscountRate: avgDiscountRate + '%',
+                        breakdown: result.breakdown.map(b => ({
+                            tier: b.tierLabel,
+                            units: b.unitsInTier,
+                            discount: b.discountRate + '%',
+                            unitPrice: '₩' + formatNumber(b.unitPrice),
+                            subtotal: '₩' + formatNumber(b.subtotal)
+                        }))
+                    };
+                    
+                    results.push(testResult);
+                    
+                    // 각 테스트 케이스 상세 출력
+                    console.log(`\n수량: ${qty}대`);
+                    console.log(`  정가: ₩${formatNumber(result.totalOriginalPrice)}`);
+                    console.log(`  최종가: ₩${formatNumber(result.finalTotalPrice)}`);
+                    console.log(`  할인액: ₩${formatNumber(result.totalDiscountAmount)} (${avgDiscountRate}%)`);
+                    console.log(`  티어별 내역:`);
+                    result.breakdown.forEach((b, idx) => {
+                        console.log(`    ${idx + 1}. ${b.tierLabel}: ${b.unitsInTier}대 × ₩${formatNumber(b.unitPrice)} = ₩${formatNumber(b.subtotal)} (${b.discountRate}% 할인)`);
+                    });
+                }
+                
+                console.log('\n=== 가격 계산 검증 완료 ===');
+                return results;
+            }
+            
+            // 숫자 포맷팅 함수
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            
+            // 숫자 카운트 애니메이션
+            function animateNumber(element, targetValue, prefix = '₩') {
+                const currentValue = parseInt(element.textContent.replace(/[₩,]/g, '')) || 0;
+                const difference = targetValue - currentValue;
+                const duration = 400;
+                const steps = 30;
+                const stepValue = difference / steps;
+                const stepTime = duration / steps;
+                
+                let currentStep = 0;
+                const timer = setInterval(() => {
+                    currentStep++;
+                    const value = Math.round(currentValue + (stepValue * currentStep));
+                    element.textContent = prefix + formatNumber(value);
+                    
+                    if (currentStep >= steps) {
+                        element.textContent = prefix + formatNumber(targetValue);
+                        clearInterval(timer);
+                    }
+                }, stepTime);
+            }
+            
+            // 가격 업데이트 함수
+            function updatePricing() {
+                const pricing = calculateProgressivePricing(computerCount);
+                
+                // 정상가 업데이트
+                originalPriceElement.textContent = '₩' + formatNumber(pricing.totalOriginalPrice);
+                
+                // 할인 금액 표시
+                if (pricing.totalDiscountAmount > 0) {
+                    discountAmountElement.textContent = '₩' + formatNumber(pricing.totalDiscountAmount);
+                    discountAmountDisplay.style.display = 'block';
+                } else {
+                    discountAmountDisplay.style.display = 'none';
+                }
+                
+                // 평균 할인율 계산 (표시용)
+                const avgDiscountRate = pricing.totalOriginalPrice > 0 
+                    ? Math.round((pricing.totalDiscountAmount / pricing.totalOriginalPrice) * 100)
+                    : 0;
+                // discountPercentElement는 더 이상 사용하지 않음 (고정 텍스트로 변경됨)
+                
+                // 할인 설명 업데이트
+                const discountDescriptionElement = document.getElementById('discountDescription');
+                if (discountDescriptionElement) {
+                    if (pricing.breakdown.length > 1) {
+                        discountDescriptionElement.textContent = '단계별 할인 적용';
+                    } else if (pricing.breakdown.length === 1 && pricing.breakdown[0].discountRate > 0) {
+                        discountDescriptionElement.textContent = pricing.breakdown[0].tierLabel + ' 할인 적용';
+                    } else {
+                        discountDescriptionElement.textContent = '정가';
+                    }
+                }
+                
+                // 최종 가격 업데이트 (애니메이션)
+                finalPriceElement.classList.remove('count-animate');
+                setTimeout(() => {
+                    finalPriceElement.classList.add('count-animate');
+                    animateNumber(finalPriceElement, pricing.finalTotalPrice);
+                }, 10);
+                
+                // 구매 버튼 텍스트는 간단하게 유지
+                purchaseBtnText.textContent = '구매하기';
+            }
+            
+            // 컴퓨터 대수 증가
+            increaseBtn.addEventListener('click', () => {
+                computerCount++;
+                countElement.textContent = computerCount;
+                countElement.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    countElement.style.transform = 'scale(1)';
+                }, 200);
+                updatePricing();
+            });
+            
+            // 컴퓨터 대수 감소
+            decreaseBtn.addEventListener('click', () => {
+                if (computerCount > 1) {
+                    computerCount--;
+                    countElement.textContent = computerCount;
+                    countElement.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        countElement.style.transform = 'scale(1)';
+                    }, 200);
+                    updatePricing();
+                }
+            });
+            
+            // 초기 가격 계산
+            updatePricing();
+            
+            // 개발 모드에서 검증 함수 실행 (콘솔에서 확인 가능)
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                validatePricing();
+            }
+        })();
+    </script>
+</body>
+</html>

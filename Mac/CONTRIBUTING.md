@@ -1,306 +1,89 @@
-# Contributing to Handy
+# Contributing to Badasugi (받아쓰기)
 
-Thank you for your interest in contributing to Handy! This guide will help you get started with contributing to this open source speech-to-text application.
+First off, thank you for considering contributing to Badasugi (받아쓰기)! It's people like you that make Badasugi such a great tool.
 
-## 📖 Philosophy
+## ⚠️ Pull Requests Not Accepted
 
-Handy aims to be the most forkable speech-to-text app. The goal is to create both a useful tool and a foundation for others to build upon—a well-patterned, simple codebase that serves the community. We prioritize:
+**As of now, this project is not accepting pull requests.** While Badasugi is open source and you're welcome to fork and modify it for your own use.
 
-- **Simplicity**: Clear, maintainable code over clever solutions
-- **Extensibility**: Make it easy for others to fork and customize
-- **Privacy**: Keep everything local and offline
-- **Accessibility**: Free tooling that belongs in everyone's hands
+**You can still contribute by:**
+- 🐛 **Reporting bugs** - Open an issue with detailed information
+- 💡 **Suggesting features** - Share your ideas via issues or discussions
+- 🍴 **Forking the project** - Feel free to create your own version
+- 📖 **Improving documentation** - Suggest clarifications or corrections via issues
 
-## 🚀 Getting Started
+Thank you for understanding!
 
-### Prerequisites
+## License
 
-Before you begin, ensure you have the following installed:
+This software is based on VoiceInk and licensed under the GNU General Public License v3 (GPL v3). By contributing to this project, you agree that your contributions will be licensed under the same GPL v3 license.
 
-- [Rust](https://rustup.rs/) (latest stable)
-- [Bun](https://bun.sh/) package manager
-- Platform-specific build tools (see [BUILD.md](BUILD.md))
+## How Can I Contribute?
 
-### Setting Up Your Development Environment
+### Reporting Bugs
 
-1. **Fork the repository** on GitHub
+- Before submitting a bug report, please check if the issue has already been reported
+- Use the bug report template when creating an issue
+- Include as much relevant information as possible
+- Include steps to reproduce the issue
 
-2. **Clone your fork**:
+### Suggesting Enhancements
 
-   ```bash
-   git clone git@github.com:YOUR_USERNAME/Handy.git
-   cd Handy
-   ```
+- Open an issue using the feature request template
+- Clearly describe the feature and its benefits
+- Discuss potential implementation approaches
+- Consider the feature's impact on existing functionality
 
-3. **Add upstream remote**:
+### Development Process
 
-   ```bash
-   git remote add upstream git@github.com:cjpais/Handy.git
-   ```
+1. Ensure you have all the requirements installed:
+   - macOS 14.0 or later
+   - Latest version of Xcode
+   - Latest version of Swift
+   - whisper.cpp properly set up
 
-4. **Install dependencies**:
+2. Follow our coding standards:
+   - Use Swift style guidelines
+   - Write meaningful commit messages
+   - Include comments where necessary
+   - Add tests for new features
 
-   ```bash
-   bun install
-   ```
+3. Testing:
+   - Run existing tests
+   - Add new tests for new functionality
+   - Ensure all tests pass before making changes
 
-5. **Download required models**:
+## Style Guidelines
 
-   ```bash
-   mkdir -p src-tauri/resources/models
-   curl -o src-tauri/resources/models/silero_vad_v4.onnx https://blob.handy.computer/silero_vad_v4.onnx
-   ```
+- Follow Swift style guidelines
+- Use meaningful variable and function names
+- Keep functions focused and concise
+- Comment complex logic
+- Write self-documenting code where possible
 
-6. **Run in development mode**:
-   ```bash
-   bun run tauri dev
-   # On macOS if you encounter cmake errors:
-   CMAKE_POLICY_VERSION_MINIMUM=3.5 bun run tauri dev
-   ```
+## Community
 
-For detailed platform-specific setup instructions, see [BUILD.md](BUILD.md).
+- Join our discussions
+- Help other contributors
+- Share your ideas
+- Be respectful and constructive
 
-### Understanding the Codebase
+## Questions?
 
-Handy follows a clean architecture pattern:
+If you have any questions or need clarification, feel free to:
+1. Open an issue on [GitHub](https://github.com/Badasugi/badasugi/issues)
+2. Visit our [website](https://www.badasugi.com)
+3. Contact us via email: badasugi.app@gmail.com
 
-**Backend (Rust - `src-tauri/src/`):**
+## Support
 
-- `lib.rs` - Main application entry point with Tauri setup
-- `managers/` - Core business logic (audio, model, transcription)
-- `audio_toolkit/` - Low-level audio processing (recording, VAD)
-- `commands/` - Tauri command handlers for frontend communication
-- `shortcut.rs` - Global keyboard shortcut handling
-- `settings.rs` - Application settings management
+- **Website**: [https://www.badasugi.com](https://www.badasugi.com)
+- **Email**: badasugi.app@gmail.com
+- **GitHub**: [https://github.com/Badasugi/badasugi](https://github.com/Badasugi/badasugi)
 
-**Frontend (React/TypeScript - `src/`):**
-
-- `App.tsx` - Main application component
-- `components/` - React UI components
-- `hooks/` - Reusable React hooks
-- `lib/types.ts` - Shared TypeScript types
-
-For more details, see the Architecture section in [README.md](README.md) or [AGENTS.md](AGENTS.md).
-
-## 🐛 Reporting Bugs
-
-### Before Submitting a Bug Report
-
-1. **Search existing issues** at [github.com/cjpais/Handy/issues](https://github.com/cjpais/Handy/issues)
-2. **Check discussions** at [github.com/cjpais/Handy/discussions](https://github.com/cjpais/Handy/discussions)
-3. **Try the latest release** to see if the issue has been fixed
-4. **Enable debug mode** (`Cmd/Ctrl+Shift+D`) to gather diagnostic information
-
-### Submitting a Bug Report
-
-When creating a bug report, please include:
-
-**System Information:**
-
-- App version (found in settings or about section)
-- Operating System (e.g., macOS 14.1, Windows 11, Ubuntu 22.04)
-- CPU (e.g., Apple M2, Intel i7-12700K, AMD Ryzen 7 5800X)
-- GPU (e.g., Apple M2 GPU, NVIDIA RTX 4080, Intel UHD Graphics)
-
-**Bug Details:**
-
-- Clear description of the bug
-- Steps to reproduce
-- Expected behavior
-- Actual behavior
-- Screenshots or logs if applicable
-- Information from debug mode if relevant
-
-Use the [Bug Report template](.github/ISSUE_TEMPLATE/bug_report.md) when creating an issue.
-
-## 💡 Suggesting Features
-
-We use GitHub Discussions for feature requests rather than issues. This keeps issues focused on bugs and actionable tasks while allowing more open-ended conversations about features.
-
-### Before Suggesting a Feature
-
-1. **Search existing discussions** at [github.com/cjpais/Handy/discussions](https://github.com/cjpais/Handy/discussions)
-2. **Check common feature requests**:
-   - [Post-processing / Editing Transcripts](https://github.com/cjpais/Handy/discussions/168)
-   - [Keyboard Shortcuts / Hotkeys](https://github.com/cjpais/Handy/discussions/211)
-
-### Submitting a Feature Request
-
-1. Go to [Discussions](https://github.com/cjpais/Handy/discussions)
-2. Click "New discussion"
-3. Choose the appropriate category (Ideas, Feature Requests, etc.)
-4. Describe your feature idea including:
-   - The problem you're trying to solve
-   - Your proposed solution
-   - Any alternatives you've considered
-   - How it fits with Handy's philosophy
-
-## 🔧 Making Code Contributions
-
-### Before You Start
-
-**This is critical:** Before writing any code, please do the following:
-
-1. **Search existing issues and PRs** - Check both open AND closed issues and pull requests. Someone may have already addressed this, or there may be a reason it was closed.
-   - [Open issues](https://github.com/cjpais/Handy/issues)
-   - [Closed issues](https://github.com/cjpais/Handy/issues?q=is%3Aissue+is%3Aclosed)
-   - [Open PRs](https://github.com/cjpais/Handy/pulls)
-   - [Closed PRs](https://github.com/cjpais/Handy/pulls?q=is%3Apr+is%3Aclosed)
-
-2. **If something was previously closed** - If you want to revisit a closed issue or PR, you need to:
-   - Provide a strong argument for why it should be reconsidered
-   - Gather community feedback first via [Discussions](https://github.com/cjpais/Handy/discussions)
-   - Link to that discussion in your PR
-
-3. **Get community feedback for features** - PRs with demonstrated community interest are **much more likely to be merged**. Start a discussion, get feedback, and link to it in your PR. This helps ensure Handy stays focused and useful for the most people without becoming bloated.
-
-Community feedback is essential to keeping Handy the best it can be for everyone. It helps prioritize what matters most and prevents feature creep.
-
-### Development Workflow
-
-1. **Create a feature branch**:
-
-   ```bash
-   git checkout -b feature/your-feature-name
-   # or
-   git checkout -b fix/your-bug-fix
-   ```
-
-2. **Make your changes**:
-   - Write clean, maintainable code
-   - Follow existing code style and patterns
-   - Add comments for complex logic
-   - Keep commits focused and atomic
-
-3. **Test thoroughly**:
-   - Test on your target platform(s)
-   - Verify existing functionality still works
-   - Test edge cases and error conditions
-   - Use debug mode to verify audio/transcription behavior
-
-4. **Commit your changes**:
-
-   ```bash
-   git add .
-   git commit -m "feat: add your feature description"
-   # or
-   git commit -m "fix: describe the bug fix"
-   ```
-
-   Use conventional commit messages:
-   - `feat:` for new features
-   - `fix:` for bug fixes
-   - `docs:` for documentation changes
-   - `refactor:` for code refactoring
-   - `test:` for test additions/changes
-   - `chore:` for maintenance tasks
-
-5. **Keep your fork updated**:
-
-   ```bash
-   git fetch upstream
-   git rebase upstream/main
-   ```
-
-6. **Push to your fork**:
-
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-7. **Create a Pull Request**:
-   - Go to the [Handy repository](https://github.com/cjpais/Handy)
-   - Click "New Pull Request"
-   - Select your fork and branch
-   - Fill out the PR template completely, including:
-     - Clear description of changes
-     - Links to related issues or discussions
-     - **Community feedback** (especially important for features)
-     - How you tested the changes
-     - Screenshots/videos if applicable
-     - Breaking changes (if any)
-
-   **Remember:** PRs with community support are prioritized. If you haven't already, start a [discussion](https://github.com/cjpais/Handy/discussions) to gather feedback before or alongside your PR. It is not explicitly required to gather feedback, but it certainly helps your PR get merged faster.
-
-### Code Style Guidelines
-
-**Rust:**
-
-- Follow standard Rust formatting (`cargo fmt`)
-- Run `cargo clippy` and address warnings
-- Use descriptive variable and function names
-- Add doc comments for public APIs
-- Handle errors explicitly (avoid unwrap in production code)
-
-**TypeScript/React:**
-
-- Use TypeScript strictly, avoid `any` types
-- Follow React hooks best practices
-- Use functional components
-- Keep components small and focused
-- Use Tailwind CSS for styling
-
-**General:**
-
-- Write self-documenting code
-- Add comments for non-obvious logic
-- Keep functions small and single-purpose
-- Prioritize readability over cleverness
-
-### Testing Your Changes
-
-**Manual Testing:**
-
-- Run the app in development mode: `bun run tauri dev`
-- Test your changes with debug mode enabled
-- Verify on multiple platforms if possible
-- Test with different audio devices
-- Try various transcription scenarios
-
-**Building for Production:**
-
-```bash
-bun run tauri build
-```
-
-Test the production build to ensure it works as expected.
-
-## 📝 Documentation Contributions
-
-Documentation improvements are highly valued! You can contribute by:
-
-- Improving README.md, BUILD.md, or this CONTRIBUTING.md
-- Adding code comments and doc comments
-- Creating tutorials or guides
-- Improving error messages
-- Updating the project website content
-
-## 🤝 Community Guidelines
-
-- **Be respectful and inclusive** - We welcome contributors of all skill levels
-- **Be patient** - This is maintained by a small team, responses may take time
-- **Be constructive** - Focus on solutions and improvements
-- **Be collaborative** - Help others and share knowledge
-- **Search first** - Check existing issues/discussions before creating new ones
-
-## 🎯 Good First Issues
-
-Look for issues labeled `good first issue` or `help wanted` if you're new to the project. These are typically:
-
-- Well-defined and scoped
-- Good for learning the codebase
-- Mentor support available
-
-## 📞 Getting Help
-
-- **Discord**: Join our [Discord community](https://discord.com/invite/WVBeWsNXK4)
-- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/cjpais/Handy/discussions)
-- **Email**: Reach out at [contact@handy.computer](mailto:contact@handy.computer)
-
-## 📜 License
-
-By contributing to Handy, you agree that your contributions will be licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Thank you for contributing to Badasugi (받아쓰기)! 🎉
 
 ---
 
-**Thank you for contributing to Handy!** Your efforts help make speech-to-text technology more accessible, private, and extensible for everyone.
+© 2026 Badasugi (받아쓰기)
+

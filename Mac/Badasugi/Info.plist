@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>wav</string>
+				<string>mp3</string>
+				<string>m4a</string>
+				<string>aiff</string>
+				<string>mp4</string>
+				<string>mov</string>
+				<string>aac</string>
+				<string>flac</string>
+				<string>caf</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Audio/Video File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.audio</string>
+				<string>public.movie</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>받아쓰기는 기록 정확도 향상을 위해 화면의 컨텍스트를 이해하기 위해 화면 녹화 접근이 필요합니다.</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/Badasugi/badasugi/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>rLRdZIjK3gHKfqNlAF9nT7FbjwSvwkJ8BVn0v2mD1Mo=</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Badasugi (받아쓰기). This software is licensed under the GNU General Public License v3 (GPL v3). See LICENSE file for details.</string>
+</dict>
+</plist>
